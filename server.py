@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
+
 
 # === AI кітапханалары ===
 import numpy as np
@@ -21,10 +23,21 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 # ==================== Frontend ======================
 frontend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-if os.path.exists(frontend_path):
-    app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
+
+# ---- /frontend mount-ты ӨШІРЕСІҢ, керек емес ----
+# if os.path.exists(frontend_path):
+#     app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
+
+@app.get("/")
+def root():
+    index_path = os.path.join(frontend_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"error": "index.html not found"}
+
 
 # ==================== Ойын деректері ======================
 players = {}
@@ -260,4 +273,5 @@ if __name__ == "__main__":
     webbrowser.open(url)
 
     uvicorn.run(app, host="0.0.0.0", port=PORT)
+
 
